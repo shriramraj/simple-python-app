@@ -14,7 +14,7 @@ A Python application that processes job descriptions and resumes to provide hiri
 
 ## Requirements
 
-- Python 3.7 or higher
+- Python 3.9 or higher
 - Anthropic API key
 - AWS account with S3 access
 - AWS credentials (Access Key ID and Secret Access Key)

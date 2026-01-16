@@ -12,6 +12,33 @@ import boto3
 from botocore.exceptions import ClientError
 
 
+def parse_json_from_response(response_text: str) -> dict:
+    """
+    Extract and parse JSON from AI response text.
+    
+    Args:
+        response_text: Response text that may contain JSON in code blocks
+        
+    Returns:
+        Parsed JSON as dictionary
+        
+    Raises:
+        ValueError: If JSON cannot be extracted or parsed
+    """
+    try:
+        # Try to extract JSON from code blocks
+        if "```json" in response_text:
+            json_str = response_text.split("```json")[1].split("```")[0].strip()
+        elif "```" in response_text:
+            json_str = response_text.split("```")[1].split("```")[0].strip()
+        else:
+            json_str = response_text.strip()
+        
+        return json.loads(json_str)
+    except (json.JSONDecodeError, IndexError) as e:
+        raise ValueError(f"Failed to parse JSON from AI response: {e}\nResponse: {response_text[:200]}...")
+
+
 def extract_job_requirements(job_description: str, api_key: str) -> dict:
     """
     Extract key skills, years of experience, and role seniority from job description.
@@ -44,15 +71,7 @@ Provide your response in JSON format with keys: "skills" (array), "years_of_expe
     )
     
     response_text = message.content[0].text
-    # Extract JSON from response
-    if "```json" in response_text:
-        json_str = response_text.split("```json")[1].split("```")[0].strip()
-    elif "```" in response_text:
-        json_str = response_text.split("```")[1].split("```")[0].strip()
-    else:
-        json_str = response_text.strip()
-    
-    return json.loads(json_str)
+    return parse_json_from_response(response_text)
 
 
 def analyze_candidate_fit(job_requirements: dict, resume: str, api_key: str) -> dict:
@@ -94,15 +113,7 @@ Provide your analysis in JSON format with:
     )
     
     response_text = message.content[0].text
-    # Extract JSON from response
-    if "```json" in response_text:
-        json_str = response_text.split("```json")[1].split("```")[0].strip()
-    elif "```" in response_text:
-        json_str = response_text.split("```")[1].split("```")[0].strip()
-    else:
-        json_str = response_text.strip()
-    
-    return json.loads(json_str)
+    return parse_json_from_response(response_text)
 
 
 def save_to_s3(result: dict, bucket_name: str, aws_access_key: str, aws_secret_key: str, aws_region: str) -> str:
