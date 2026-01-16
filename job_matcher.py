@@ -6,7 +6,7 @@ Analyzes job descriptions and resumes to provide hiring recommendations using An
 
 import os
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 import anthropic
 import boto3
 from botocore.exceptions import ClientError
@@ -126,7 +126,7 @@ def save_to_s3(result: dict, bucket_name: str, aws_access_key: str, aws_secret_k
         region_name=aws_region
     )
     
-    timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+    timestamp = datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')
     object_key = f"job_match_results_{timestamp}.json"
     
     try:
@@ -226,7 +226,7 @@ def main():
     
     # Step 3: Prepare final result
     result = {
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "job_requirements": job_requirements,
         "fit_score": analysis["fit_score"],
         "matched_skills": analysis["matched_skills"],
@@ -242,7 +242,7 @@ def main():
     print()
     
     # Step 5: Save to S3
-    print("Step 3: Saving results to S3...")
+    print("Step 5: Saving results to S3...")
     save_to_s3(result, s3_bucket, aws_access_key, aws_secret_key, aws_region)
     print()
     
